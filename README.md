@@ -15,3 +15,33 @@ wrangler kv:namespace create "shorturl" --preview
 ```
 
 Further documentation for Wrangler can be found [here](https://developers.cloudflare.com/workers/tooling/wrangler).
+
+#### Auth0
+All these Cloudflare variable must be set according to your AuthO app
+AUTH0_CALLBACKURL	
+AUTH0_CLIENT_ID	
+AUTH0_CLIENT_SECRET	
+AUTH0_DOMAIN
+SALT
+
+### wrangler.toml
+Something like:
+```
+name = "cf-name
+type = "webpack"
+
+account_id = "#id"
+workers_dev = false
+route = "real_url/*"
+zone_id = "#zone_id"
+compatibility_date = "2022-01-02"
+
+kv_namespaces = [ 
+	 { binding = "SHORTURL", id = "id", preview_id = "preview_id" },
+     { binding = "AUTH_STORE", id = "id", preview_id = "preview_id" }
+]
+
+[site]
+bucket = "./worker-public"
+entry-point = "worker-code"
+```
