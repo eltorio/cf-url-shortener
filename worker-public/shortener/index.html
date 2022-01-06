@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<!--
+Copyright © Eltorio - Ronan Le Meillat
+This file is part of cf-url-shortener <https://github.com/eltorio/cf-url-shortener>.
+This project was built with the help of 
+Matthew Mascioni who wrote a usefull tutorial https://dev.to/mmascioni/build-a-link-shortener-with-cloudflare-workers-1j3i
+
+cf-url-shortener is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+cf-url-shortener is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with cf-url-shortener.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Shorten my URL</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.2.26/vue.global.min.js" integrity="sha512-MXAAS+HimUKBNq7JH7RtQDLg9dM+dh4+nED1e29hydWOzkj1IOl+rf0SlCyXnlJS5Acb+wHJUAEGCfKyooCiAg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="/shortener/static/punycode.js"></script>
+    <link rel="stylesheet" href="/shortener/static/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div class="container">
+        <h1>Shorten a URL</h1>
+        <p>
+          Fill in the URL you want to shorten below. Links expire in 24 hours.
+        </p>
+
+        <form @submit.prevent="handleUrlSubmit">
+          <input
+            type="text"
+            id="input-url"
+            name="url"
+            size="40"
+            placeholder="https://google.com"
+            required
+            v-model="longUrl"
+          />
+          <select name="ttl" id="input-ttl" v-model="linkTtl">
+            <option value="3600">1h</option>
+            <option value="21600">6h</option>
+            <option value="43200">12h</option>
+            <option value="86400" selected>1d</option>
+            <option value="604800">1w</option>
+            <option value="2592000">1m</option>
+            <option value="15778476">6m</option>
+            <option value="31556952">1y</option>
+            <option value="3155695200">1c</option>
+          </select>
+          <input type="submit" id="input-submit" value="Shorten" />
+
+        </select>
+
+        </form>
+
+        <div class="message" v-if="shortUrl">
+          <p>Your new shortened URL is:</p>
+          <h2>{{ shortUrl }}</h2><br/>
+          <h2>{{ shortUrlUnicode }}</h2>
+        </div>
+
+        <div class="message error" v-if="error">
+          <p>
+            Error shortening your link. Please ensure it's a valid URL and
+            starts with http:// or https://
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script>
+    const app = Vue.createApp({
+      data() {
+        return {
+          longUrl: null,
+          linkTtl: 86400,
+          shortUrl: null,
+          shortUrlUnicode: null,
+          error: false,
+          errorMessage: null,
+        };
+      },
+      methods: {
+        handleUrlSubmit() {
+          fetch('/links', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              url: this.longUrl,
+              ttl: this.linkTtl
+            }),
+          })
+            .then((response) => {
+              if (response.status == 200) {
+                this.error = false;
+                return response.json();
+              } else {
+                throw new Error('Issue saving URL');
+              }
+            })
+            .then((data) => {
+              this.shortUrl = data.shortened;
+              this.shortUrlUnicode = window.Punycode.toUnicode(this.shortUrl);
+            })
+            .catch((error) => {
+              this.error = true;
+            });
+        },
+      },
+    });
+    app.mount('#app');
+  </script>
+</html>
