@@ -11,7 +11,7 @@ const auth0 = {
 const generateStateParam = async () => {
   const resp = await fetch('https://csprng.xyz/v1/api')
   const { Data: state } = await resp.json()
-  await AUTH_STORE.put(`state-${state}`, true, { expirationTtl: 60 })
+  await AuthStore.put(`state-${state}`, true, { expirationTtl: 60 })
   return state
 }
 
@@ -123,7 +123,7 @@ const persistAuth = async exchange => {
   const digestArray = new Uint8Array(digest)
   const id = btoa(String.fromCharCode.apply(null, digestArray))
 
-  await AUTH_STORE.put(id, JSON.stringify(body))
+  await AuthStore.put(id, JSON.stringify(body))
 
   const headers = {
     Location: '/',
@@ -148,7 +148,7 @@ export const handleRedirect = async event => {
     return null
   }
 
-  const storedState = await AUTH_STORE.get(`state-${state}`)
+  const storedState = await AuthStore.get(`state-${state}`)
   if (!storedState) {
     return null
   }
@@ -168,7 +168,7 @@ const verify = async event => {
     if (!cookies[cookieKey]) return {}
     const sub = cookies[cookieKey]
 
-    const kvData = await AUTH_STORE.get(sub)
+    const kvData = await AuthStore.get(sub)
     if (!kvData) {
       throw new Error('Unable to find authorization data')
     }

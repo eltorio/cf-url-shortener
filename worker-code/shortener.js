@@ -28,7 +28,7 @@ const nanoid = customAlphabet(
 
 router.get('/:slug', async request => {
     let req = request.params.slug;
-    let link = await SHORTURL.get(req);
+    let link = await CfUrlShortener.get(req);
   
     if (link) {
       return new Response(null, {
@@ -54,7 +54,7 @@ router.get('/:slug', async request => {
     let requestBody = await request.json();
     if (('url' in requestBody) && ('ttl' in requestBody)) {
       // Add slug to our KV store so it can be retrieved later:
-      await SHORTURL.put(slug, requestBody.url, { expirationTtl: Number(requestBody.ttl) } );
+      await CfUrlShortener.put(slug, requestBody.url, { expirationTtl: Number(requestBody.ttl) } );
       let shortenedURL = `${new URL(request.url).origin}/${slug}`;
       let responseBody = {
         message: 'Link shortened successfully',

@@ -10,7 +10,7 @@ To generate using [wrangler](https://github.com/cloudflare/wrangler)
 
 ```
 wrangler generate cf-url-shortener https://github.com/cloudflare/worker-template
-wrangler kv:namespace create "shorturl" --preview
+wrangler kv:namespace create "CfUrlShortener" --preview
 # rember to declare the output in the wrangler.toml
 ```
 
@@ -37,8 +37,8 @@ zone_id = "#zone_id"
 compatibility_date = "2022-01-02"
 
 kv_namespaces = [ 
-	 { binding = "SHORTURL", id = "id", preview_id = "preview_id" },
-     { binding = "AUTH_STORE", id = "id", preview_id = "preview_id" }
+	 { binding = "CfUrlShortener", id = "id", preview_id = "preview_id" },
+     { binding = "AuthStore", id = "id", preview_id = "preview_id" }
 ]
 
 [site]
